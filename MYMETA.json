@@ -27,15 +27,15 @@
       },
       "configure" : {
          "requires" : {
-            "Encode" : 0,
-            "ExtUtils::MakeMaker" : 0,
-            "Furl" : 0,
-            "HTML::TreeBuilder::XPath" : 0,
-            "URI" : 0
+            "ExtUtils::MakeMaker" : 0
          }
       },
       "runtime" : {
          "requires" : {
+            "Encode" : 0,
+            "Furl" : 0,
+            "HTML::TreeBuilder::XPath" : 0,
+            "URI" : 0,
             "perl" : "5.006"
          }
       }
