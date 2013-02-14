@@ -13,6 +13,10 @@ WriteMakefile(
     MIN_PERL_VERSION => 5.006,
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
+        'Furl' => 0,
+        'HTML::TreeBuilder::XPath' => 0,
+        'Encode' => 0,
+        'URI' => 0,
     },
     BUILD_REQUIRES => {
         'Test::More' => 0,

@@ -1,0 +1,26 @@
+---
+abstract: 'Perl API of www.jpnumber.com'
+author:
+  - 'ytnobody <ytnobody attt gmail>'
+build_requires:
+  Test::More: 0
+configure_requires:
+  Encode: 0
+  ExtUtils::MakeMaker: 0
+  Furl: 0
+  HTML::TreeBuilder::XPath: 0
+  URI: 0
+dynamic_config: 0
+generated_by: 'ExtUtils::MakeMaker version 6.62, CPAN::Meta::Converter version 2.112150'
+license: unknown
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: WWW-JPNumberCom
+no_index:
+  directory:
+    - t
+    - inc
+requires:
+  perl: 5.006
+version: 0.01
