@@ -154,7 +154,7 @@ sub fetch_url {
         return;
     }
     my $tree = HTML::TreeBuilder::XPath->new;
-    $tree->parse($res->content);
+    $tree->parse( Encode::decode_utf8($res->content) );
     return $tree;
 }
 
