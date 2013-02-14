@@ -1,3 +1,5 @@
+=encoding utf8;
+
 =head1 NAME
 
 WWW::JPNumberCom - Perl API of www.jpnumber.com
@@ -8,6 +10,8 @@ Version 0.01
 
 =cut
 
+our $VERSION = '0.01';
+
 =head1 SYNOPSIS
 
 Quick summary of what the module does.
@@ -16,7 +20,9 @@ Perhaps a little code snippet.
 
     use WWW::JPNumberCom;
 
-    my $foo = WWW::JPNumberCom->new();
+    my @numbers = WWW::JPNumberCom->search( 'サウナ' );
+    my $info = WWW::JPNumberCom->number( $number[0] );
+    print $info->{user}{name}. "\n";
     ...
 
 =head1 EXPORT
@@ -28,11 +34,15 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =head2 AGENT
 
-=cut
- 
+=cut 
+
+our $AGENT //= Furl->new( agent => __PACKAGE__.'/'.$VERSION );
+
 =head2 BASEURL
 
 =cut
+
+our $BASEURL //= 'http://www.jpnumber.com';
 
 =head1 SUBROUTINES/METHODS
 
@@ -42,11 +52,100 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =cut
 
+sub number {
+    my ($class, $number) = @_;
+
+    my $data = $class->search($number);
+    return unless $data->{total};
+
+    my $url = $data->{links}[0];
+    my $tree = $class->fetch_url($url);
+    my $user_enable = $tree->findnodes('//*[@id="result-main-right"]/div[3]/div[2]/table') ? 1 : 0;
+    my $report_exists = $tree->findnodes('//*[@id="result-main-right"]/span/div[3]/div[@class="title-background-pink"]') ? 1 : 0;
+
+    return +{
+        number => {
+            raw               => $number,
+            area_code         => $tree->findvalue('//*[@id="result-main-right"]/div[1]/div[2]/table/tr[1]/td[2]'),
+            city_code         => $tree->findvalue('//*[@id="result-main-right"]/div[1]/div[2]/table/tr[1]/td[4]'),
+            subscriber_number => $tree->findvalue('//*[@id="result-main-right"]/div[1]/div[2]/table/tr[1]/td[6]'),
+            type              => $tree->findvalue('//*[@id="result-main-right"]/div[1]/div[2]/table/tr[3]/td[2]'),
+            provider          => $tree->findvalue('//*[@id="result-main-right"]/div[1]/div[2]/table/tr[3]/td[4]'),
+        },
+        user => $user_enable ? {
+            name          => $tree->findvalue('//*[@id="result-main-right"]/div[3]/div[2]/table/tr[1]/td[2]'),
+            industry_type => [ split ',', $tree->findvalue('//*[@id="result-main-right"]/div[3]/div[2]/table/tr[2]/td[2]') ],
+            address       => $tree->findvalue('//*[@id="result-main-right"]/div[3]/div[2]/table/tr[3]/td[2]'),
+            contact_to    => $tree->findvalue('//*[@id="result-main-right"]/div[3]/div[2]/table/tr[4]/td[2]'),
+            station_near  => $tree->findvalue('//*[@id="result-main-right"]/div[3]/div[2]/table/tr[5]/td[2]'),
+            traffic       => $tree->findvalue('//*[@id="result-main-right"]/div[3]/div[2]/table/tr[6]/td[2]'),
+            official_url  => $tree->findvalue('//*[@id="result-main-right"]/div[3]/div[2]/table/tr[7]/td[2]/a/@href'),
+        } : undef,
+        reports => $report_exists ? [
+            map {
+                my $node = $_;
+                my $reporter = $node->find('span');
+                my $date = $node->find_by_attribute('align','right');
+                my $body = $node->find('dt');
+                +{
+                    reporter => $reporter->as_text,
+                    date     => $date->as_text,
+                    body     => $body->as_text,
+                };
+            } $tree->findnodes('//*[@id="result-main-right"]/span/div[@class="frame-728-gray-l"]'),
+        ] : [],
+    };
+}
+
+
 =head2 search
 
     my @numbers = WWW::JPNumberCom->search($keyword_or_number);
 
 =cut
+
+sub search {
+    my ($class, $query, $page) = @_;
+
+    $page ||= 1;
+    croak "search query is null" unless $query;
+
+    my $url = URI->new($BASEURL.'/searchnumber.do');
+    $url->query_form(number => $query);
+
+    my $tree = $class->fetch_url($url);
+    my $total = 0+ $tree->findvalue( '//*[@id="result-main-right-title-l"]/span[2]' );
+
+    return +{
+        page          => $page,
+        lastpage      => 1+ int($total / 20),
+        numbers       => [
+            map {
+                my ($num) = $_ =~ /([0-9]+)/;
+                $num;
+            } $tree->findvalues( '//*[@id="result-main-right"]/div[@class="frame-728-orange-l"]/div/span/text()' ),
+        ],
+        links         => [
+            map {
+                $BASEURL.'/'.$_ ;
+            } $tree->findvalues( '//*[@id="result-main-right"]/div[@class="frame-728-orange-l"]/table/tr/td[2]/a/@href' ),
+        ],
+        total         => $total,
+    };
+}
+
+sub fetch_url {
+    my ($class, $url) = @_;
+    my $res = $AGENT->get($url);
+    unless ( $res->is_success ) {
+        croak "could not load $url :". $res->status_line;
+        return;
+    }
+    my $tree = HTML::TreeBuilder::XPath->new;
+    $tree->parse($res->content);
+    return $tree;
+}
+
 
 =head1 AUTHOR
 
@@ -133,7 +232,6 @@ YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
 CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
 CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 
 =cut
 

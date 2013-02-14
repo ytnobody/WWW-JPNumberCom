@@ -10,6 +10,8 @@ use Encode;
 use Carp;
 use URI;
 
+=encoding utf8
+
 =head1 NAME
 
 WWW::JPNumberCom - Perl API of www.jpnumber.com
@@ -30,7 +32,9 @@ Perhaps a little code snippet.
 
     use WWW::JPNumberCom;
 
-    my $foo = WWW::JPNumberCom->new();
+    my @numbers = WWW::JPNumberCom->search( 'サウナ' );
+    my $info = WWW::JPNumberCom->number( $number[0] );
+    print $info->{user}{name}. "\n";
     ...
 
 =head1 EXPORT
