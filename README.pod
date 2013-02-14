@@ -7,6 +7,7 @@ WWW::JPNumberCom - Perl API of www.jpnumber.com
 Version 0.01
 
 =cut
+
 =head1 SYNOPSIS
 
 Quick summary of what the module does.
@@ -27,10 +28,12 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =head2 AGENT
 
-=cut 
+=cut
+ 
 =head2 BASEURL
 
 =cut
+
 =head1 SUBROUTINES/METHODS
 
 =head2 number
@@ -38,11 +41,13 @@ if you don't export anything, such as for a purely object-oriented module.
     my $data = WWW::JPNumberCom->number( '0123456789' );
 
 =cut
+
 =head2 search
 
     my @numbers = WWW::JPNumberCom->search($keyword_or_number);
 
 =cut
+
 =head1 AUTHOR
 
 ytnobody, C<< <ytnobody attt gmail> >>
@@ -131,3 +136,4 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 =cut
+
