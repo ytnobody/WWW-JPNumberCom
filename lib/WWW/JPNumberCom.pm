@@ -146,6 +146,34 @@ sub search {
     };
 }
 
+=head2 recent_reports 
+
+    my @reports = WWW::JPNumberCom->recent_reports;
+
+=cut
+
+sub recent_reports {
+    my ($class) = @_;
+    my $url = URI->new($BASEURL.'/newcomment/');
+    my $tree = $class->fetch_url($url);
+    return [
+        map {
+            my $number = $_->find_by_attribute('class','result');
+            my $who = $_->find_by_attribute('align','right')->as_text;
+            my ($reporter, $date) = $who =~ /^(.+)\((.+)\)$/;
+            my $summary = $_->find('dt')->as_text;
+            $summary =~ s/詳細を見る$//;
+            +{
+                number   => $number->as_text,
+                link     => $BASEURL.$number->attr('href'),
+                reporter => $reporter,
+                date     => $date,
+                summary  => $summary,
+            };
+        } $tree->findnodes('//*[@id="container"]/div[3]/div[4]/div[1]/div[@class="frame-728-orange-l"]'),
+    ];
+}
+
 sub fetch_url {
     my ($class, $url) = @_;
     my $res = $AGENT->get($url);
