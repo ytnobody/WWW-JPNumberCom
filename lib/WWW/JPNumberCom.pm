@@ -32,8 +32,9 @@ Perhaps a little code snippet.
 
     use WWW::JPNumberCom;
 
-    my @numbers = WWW::JPNumberCom->search( 'サウナ' );
-    my $info = WWW::JPNumberCom->number( $number[0] );
+    my $res = WWW::JPNumberCom->search( 'サウナ' );
+    my $number = $res->{numbers}[0]{number};
+    my $info = WWW::JPNumberCom->number( $number );
     print $info->{user}{name}. "\n";
     ...
 
