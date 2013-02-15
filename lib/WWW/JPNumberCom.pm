@@ -70,7 +70,7 @@ sub number {
     my $data = $class->search($number);
     return unless $data->{total};
 
-    my $url = $data->{links}[0];
+    my $url = $data->{numbers}[0]{link};
     my $tree = $class->fetch_url($url);
     my $user_enable = $tree->findnodes('//*[@id="result-main-right"]/div[3]/div[2]/table') ? 1 : 0;
     my $report_exists = $tree->findnodes('//*[@id="result-main-right"]/span/div[3]/div[@class="title-background-pink"]') ? 1 : 0;
@@ -133,9 +133,14 @@ sub search {
         lastpage      => 1+ int($total / 20),
         numbers       => [
             map {
-                my ($num) = $_ =~ /([0-9]+)/;
-                $num;
-            } $tree->findvalues( '//*[@id="result-main-right"]/div[@class="frame-728-orange-l"]/div/span/text()' ),
+                my $belt = $_->find_by_attribute('class','title-text12');
+                my ($num) = $belt->as_text =~ /\(([0-9]+)\)$/;
+                my $link = $BASEURL.'/'.$belt->find('a')->attr('href');
+                +{
+                    number => $num,
+                    link   => $link,
+                };
+            } $tree->findnodes( '//*[@id="result-main-right"]/div[@class="frame-728-orange-l"]' ),
         ],
         links         => [
             map {
