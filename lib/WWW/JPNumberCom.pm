@@ -162,7 +162,7 @@ sub recent_reports {
     my ($class) = @_;
     my $url = URI->new($BASEURL.'/newcomment/');
     my $tree = $class->fetch_url($url);
-    return [
+    return (
         map {
             my $number = $_->find_by_attribute('class','result');
             my $who = $_->find_by_attribute('align','right')->as_text;
@@ -177,7 +177,7 @@ sub recent_reports {
                 summary  => $summary,
             };
         } $tree->findnodes('//*[@id="container"]/div[3]/div[4]/div[1]/div[@class="frame-728-orange-l"]'),
-    ];
+    );
 }
 
 sub fetch_url {
